@@ -1,4 +1,6 @@
 <?php
+ob_start(); // Start output buffering
+
 include("../../functions.php");
 include("../partials/header.php");
 include("../partials/side-bar.php");
@@ -135,4 +137,6 @@ function updateSubject($subjectId, $subjectName) {
 
 <?php
 include("../partials/footer.php");
+ob_end_flush(); // End output buffering and send output
+
 ?>
