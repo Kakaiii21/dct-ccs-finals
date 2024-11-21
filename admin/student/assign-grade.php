@@ -84,5 +84,46 @@ if ($result->num_rows > 0) {
 }
 ?>
 
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pt-5">
+    <h1 class="h2">Assign Grade to Subject</h1>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="../dashboard.php">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="../student/register.php">Register Student</a></li>
+            <li class="breadcrumb-item"><a href="attach-subject.php?id=<?php echo htmlspecialchars($record['student_id'] ?? ''); ?>">Attach Subject to Student</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Assign Grade to Subject</li>
+        </ol>
+    </nav>
+
+    <?php if ($error_message): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?php echo htmlspecialchars($error_message); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php elseif ($success_message): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <?php echo htmlspecialchars($success_message); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($record)): ?>
+        <div class="card">
+            <div class="card-body">
+                <h5>Selected Student and Subject Information</h5>
+                <ul>
+                    <li><strong>Student ID:</strong> <?php echo htmlspecialchars($record['student_id']); ?></li>
+                    <li><strong>Name:</strong> <?php echo htmlspecialchars($record['first_name'] . ' ' . $record['last_name']); ?></li>
+                    <li><strong>Subject Code:</strong> <?php echo htmlspecialchars($record['subject_code']); ?></li>
+                    <li><strong>Subject Name:</strong> <?php echo htmlspecialchars($record['subject_name']); ?></li>
+                </ul>
+
+           
+            </div>
+        </div>
+    <?php endif; ?>
+</main>
+
 <?php require_once '../partials/footer.php'; ?>
 <?php ob_end_flush(); // Flush output buffer ?>
