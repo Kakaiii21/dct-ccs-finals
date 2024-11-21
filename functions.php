@@ -1,5 +1,7 @@
   
 <?php    
+require_once('database.php');
+
 function databaseConnection(): mysqli {
    $server = 'localhost';
    $username = 'root';       
