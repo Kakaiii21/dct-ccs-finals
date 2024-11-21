@@ -1,3 +1,4 @@
 <?php
-    // Logout Code Here
+require_once '../functions.php';
+logout_user();
 ?>

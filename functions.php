@@ -8,7 +8,6 @@
     // Create connection
     $conn = new mysqli($servername, $username, $password, $dbname);
 
-    // Check connection
     if ($conn->connect_error) {
         die("Connection failed: " . $conn->connect_error);
     }
@@ -218,7 +217,14 @@ function isStudentIdDuplicate($data) {
 
     return '';
 }
-
+function logout_user() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start(); // Start the session if not already started
+    }
+    session_destroy(); // Destroy the session
+    header("Location:../index.php"); // Redirect to root login page
+    exit();
+}
 // Generate a unique student ID based on the max ID in the database
 function createUniqueStudentId() {
     $db = databaseConnection();
