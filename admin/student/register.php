@@ -14,16 +14,16 @@ $success_msg = '';
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $new_student = processStudentForm();
-    $validation_errors = validateStudentData($new_student);
-    
+    $new_student = processStudentForm();  // Process the form data
+    $validation_errors = validateStudentData($new_student);  // Validate student data
+
     if (empty($validation_errors)) {
-        $errors = handleDuplicateStudent($new_student);
+        $errors = handleDuplicateStudent($new_student);  // Handle duplicates
         if (empty($errors)) {
-            $success_msg = registerNewStudent($new_student);
+            $success_msg = registerNewStudent($new_student);  // Register the student if no errors
         }
     } else {
-        $errors = displayAlert($validation_errors, 'danger');
+        $errors = displayAlert($validation_errors, 'danger');  // Show validation errors
     }
 }
 
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
  */
 function processStudentForm() {
     return [
-        'id_number' => getStudentIdPrefix(trim($_POST['student_id'] ?? '')),
+        'id_number' => sanitizeStudentId(trim($_POST['student_id'] ?? '')),
         'first_name' => trim($_POST['first_name'] ?? ''),
         'last_name' => trim($_POST['last_name'] ?? '')
     ];
@@ -57,10 +57,8 @@ function validateStudentData($student) {
  * @return string Error message if a duplicate is found, empty otherwise.
  */
 function handleDuplicateStudent($student) {
-    if (StudentIdDuplicate($data)) {
-        return displayAlert(["Student ID already exists."], 'danger');
-    }
-    return '';
+    $duplicate_check = isStudentIdDuplicate($student);
+    return !empty($duplicate_check) ? displayAlert([$duplicate_check], 'danger') : '';
 }
 
 /**
@@ -70,7 +68,7 @@ function handleDuplicateStudent($student) {
  * @return string Success or error message.
  */
 function registerNewStudent($new_student) {
-    $db = connectDatabase();
+    $db = databaseConnection();
     $unique_id = createUniqueStudentId();
     $insert_query = "INSERT INTO students (id, student_id, first_name, last_name) VALUES (?, ?, ?, ?)";
     $stmt = $db->prepare($insert_query);
@@ -103,7 +101,6 @@ function fetchAllStudents($db) {
     $fetch_query = "SELECT * FROM students";
     return $db->query($fetch_query);
 }
-
 ?>
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pt-5">
@@ -165,7 +162,7 @@ function fetchAllStudents($db) {
                 </thead>
                 <tbody>
                     <?php
-                    $db = connectDatabase();
+                    $db = databaseConnection();
                     $students = fetchAllStudents($db);
                     while ($row = $students->fetch_assoc()): ?>
                         <tr>
