@@ -1,6 +1,5 @@
 <?php
 ob_start(); // Start output buffering
-include("../../functions.php");
 
 require_once '../partials/header.php';
 require_once '../partials/side-bar.php';
