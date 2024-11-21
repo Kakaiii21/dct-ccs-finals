@@ -1,21 +1,19 @@
-  
 <?php    
-require_once('database.php');
+ function databaseConnection(): mysqli {
+    $servername = 'localhost';
+    $username = 'root';        // Change if needed
+    $password = "";            // Change if needed
+    $dbname = 'dct-ccs-finals'; // Replace with your actual database name
 
-function databaseConnection(): mysqli {
-   $server = 'localhost';
-   $username = 'root';       
-   $password = "";            
-   $dbname = 'dct-ccs-finals'; 
+    // Create connection
+    $conn = new mysqli($servername, $username, $password, $dbname);
 
-   
-   $conn = new mysqli($server, $username, $password, $dbname);
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
 
-   if ($conn->connect_error) {
-       die("Connection failed: " . $conn->connect_error);
-   }
-
-   return $conn;
+    return $conn;
 }
 function userLogin($email, $password) {
     $conn = databaseConnection();
