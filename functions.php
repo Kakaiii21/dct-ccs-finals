@@ -56,7 +56,7 @@ function getAllSubjects() {
 }
 
 // Function to validate subject data (subject code and subject name)
-function validateSubjectData($subject_data) {
+function validateSubjectInputs($subject_data) {
     $errors = [];
 
     // Check if subject code is provided and has a valid length
@@ -111,7 +111,7 @@ function checkDuplicateSubjectName($subject_name) {
 // Function to add a new subject to the database
 function addNewSubject($subject_data) {
     // Validate the input data
-    $validation_errors = validateSubjectData($subject_data);
+    $validation_errors = validateSubjectInputs($subject_data);
     if (!empty($validation_errors)) {
         return renderAlert($validation_errors, 'danger'); // Return validation errors
     }

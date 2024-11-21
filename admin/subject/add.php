@@ -1,123 +1,150 @@
 <?php
-require_once(__DIR__ . '/../../functions.php');
-require_once '../partials/header.php'; 
-require_once '../partials/side-bar.php';
+include("../../functions.php");
+$Pagetitle = "Add Subject";
+include("../partials/header.php");
+include("../partials/side-bar.php");
 
-// Initialize variables
-$alert_message = '';  // Consolidated alert message
+$errorMessage = null; // Variable to store error messages
+$subjectCode = ''; // Store subject code for form retention
+$subjectName = ''; // Store subject name for form retention
 
-// Handle Add Subject Request
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_subject'])) {
-    $subject_code = trim($_POST['subject_code']);
-    $subject_name = trim($_POST['subject_name']);
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $subjectCode = trim($_POST['subjectCode']);
+    $subjectName = trim($_POST['subjectName']);
 
-    // Validate inputs
-    $errors = validateSubjectInputs($subject_code, $subject_name);
+    // Validate input fields
+    if (empty($subjectCode) || empty($subjectName)) {
+        $errorMessage = "All fields are required!";
+    } else {
+        $conn = databaseConnection();
 
-    if (empty($errors)) {
-        // Check for duplicate subject code or name
-        $duplicate_code_error = checkDuplicateSubjectData(['subject_code' => $subject_code]);
-        $duplicate_name_error = checkDuplicateSubjectName($subject_name);
+        // Check for duplicate subject code
+        $stmt = $conn->prepare("SELECT * FROM subjects WHERE subject_code = ?");
+        $stmt->bind_param("s", $subjectCode);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-        if (!empty($duplicate_code_error) || !empty($duplicate_name_error)) {
-            $alert_message = renderAlert(
-                array_filter([$duplicate_code_error, $duplicate_name_error]), 
-                'danger'
-            );
+        if ($result->num_rows > 0) {
+            $errorMessage = "A subject with this code already exists!";
         } else {
-            // Insert new subject into the database
-            $connection = databaseConnection();
-            $query = "INSERT INTO subjects (subject_code, subject_name) VALUES (?, ?)";
-            $stmt = $connection->prepare($query);
-            $stmt->bind_param('ss', $subject_code, $subject_name);
+            // Check for duplicate subject name
+            $stmt = $conn->prepare("SELECT * FROM subjects WHERE subject_name = ?");
+            $stmt->bind_param("s", $subjectName);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-            if ($stmt->execute()) {
-                $alert_message = renderAlert(["Subject added successfully!"], 'success');
-                // Clear the fields after successful submission
-                $subject_code = '';
-                $subject_name = '';
+            if ($result->num_rows > 0) {
+                $errorMessage = "A subject with this name already exists!";
             } else {
-                $alert_message = renderAlert(["Error adding subject. Please try again."], 'danger');
+                // Insert new subject into the database
+                $stmt = $conn->prepare("INSERT INTO subjects (subject_code, subject_name) VALUES (?, ?)");
+                $stmt->bind_param("ss", $subjectCode, $subjectName);
+                $stmt->execute();
+
+                // Clear the form fields after successful submission
+                $subjectCode = '';
+                $subjectName = '';
             }
         }
-    } else {
-        $alert_message = renderAlert($errors, 'danger');
-    }
-}
 
-// Fetch subjects to display in the list
-$connection = databaseConnection();
-$query = "SELECT * FROM subjects";
-$result = $connection->query($query);
-
-// Function to validate subject inputs
-function validateSubjectInputs($subject_code, $subject_name) {
-    $errors = [];
-    if (empty($subject_code)) {
-        $errors[] = "Subject Code is required.";
-    } elseif (strlen($subject_code) > 4) {
-        $errors[] = "Subject Code cannot be longer than 4 characters.";
+        // Close database connection
+        $stmt->close();
+        $conn->close();
     }
-    if (empty($subject_name)) {
-        $errors[] = "Subject Name is required.";
-    }
-    return $errors;
 }
 ?>
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pt-5">
-    <h1 class="h2">Add a New Subject</h1>
+    <div>
+        <h2>Add a New Subject</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="../dashboard.php">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Add Subject</li>
+            </ol>
+        </nav>
 
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="../dashboard.php">Dashboard</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Add a New Subject</li>
-        </ol>
-    </nav>
+        <!-- Display error message if any -->
+        <?php if ($errorMessage): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <?php echo $errorMessage; ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
 
-    <!-- Display a single alert message between breadcrumb and the form -->
-    <?php if (!empty($alert_message)): ?>
-        <?php echo $alert_message; ?>
-    <?php endif; ?>
-
-    <!-- Add Subject Form -->
-    <form method="post" action="">
-        <div class="form-floating mb-3">
-            <input type="text" class="form-control" id="subject_code" name="subject_code" placeholder="Subject Code" value="<?php echo htmlspecialchars($subject_code ?? ''); ?>">
-            <label for="subject_code">Subject Code</label>
+        <!-- Subject registration form -->
+        <div class="card">
+            <div class="card-body">
+                <form action="" method="POST">
+                    <div class="mb-3">
+                        <label for="subjectCode" class="form-label">Subject Code</label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="subjectCode" 
+                            name="subjectCode" 
+                            placeholder="Enter Subject Code" 
+                            value="<?php echo htmlspecialchars($subjectCode); ?>"
+                        >
+                    </div>
+                    <div class="mb-3">
+                        <label for="subjectName" class="form-label">Subject Name</label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="subjectName" 
+                            name="subjectName" 
+                            placeholder="Enter Subject Name" 
+                            value="<?php echo htmlspecialchars($subjectName); ?>"
+                        >
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <button type="submit" class="btn btn-primary w-100">Add Subject</button>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="form-floating mb-3">
-            <input type="text" class="form-control" id="subject_name" name="subject_name" placeholder="Subject Name" value="<?php echo htmlspecialchars($subject_name ?? ''); ?>">
-            <label for="subject_name">Subject Name</label>
-        </div>
-        <div class="mb-3">
-            <button type="submit" name="add_subject" class="btn btn-primary w-100">Add Subject</button>
-        </div>
-    </form>
 
-    <!-- Subject List -->
-    <h3 class="mt-5">Subject List</h3>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Subject Code</th>
-                <th>Subject Name</th>
-                <th>Option</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php while ($row = $result->fetch_assoc()): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($row['subject_code']); ?></td>
-                    <td><?php echo htmlspecialchars($row['subject_name']); ?></td>
-                    <td>
-                        <a href="edit.php?id=<?php echo $row['id']; ?>" class="btn btn-info btn-sm">Edit</a>
-                        <a href="delete.php?id=<?php echo $row['id']; ?>" class="btn btn-danger btn-sm">Delete</a>
-                    </td>
-                </tr>
-            <?php endwhile; ?>
-        </tbody>
-    </table>
+        <!-- Display list of existing subjects -->
+        <div class="card mt-4">
+            <div class="card-header">Subject List</div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">Subject Code</th>
+                            <th scope="col">Subject Name</th>
+                            <th scope="col">Option</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        // Fetch and display all subjects from the database
+                        $conn = databaseConnection();
+                        $result = $conn->query("SELECT * FROM subjects ORDER BY id ASC");
+
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<tr>
+                                    <td>{$row['subject_code']}</td>
+                                    <td>{$row['subject_name']}</td>
+                                    <td>
+                                        <a href='edit.php?id={$row['id']}' class='btn btn-sm btn-info'>Edit</a>
+                                        <a href='delete.php?id={$row['id']}' class='btn btn-sm btn-danger'>Delete</a>
+                                    </td>
+                                </tr>";
+                        }
+
+                        // Close connection
+                        $conn->close();
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </main>
 
-<?php require_once '../partials/footer.php'; ?>
+<?php 
+include("../partials/footer.php");
+?>
