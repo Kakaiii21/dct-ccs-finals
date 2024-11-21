@@ -3,6 +3,7 @@ ob_start(); // Start output buffering
 
 require_once '../partials/header.php';
 require_once '../partials/side-bar.php';
+require_once '../../functions.php';
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -33,7 +34,7 @@ function deleteStudent($student_id) {
     global $error_message;
 
     if (isset($student_id)) {
-        $connection = db_connect();
+        $connection = databaseConnection();
         $query = "DELETE FROM students WHERE id = ?";
         $stmt = $connection->prepare($query);
         $stmt->bind_param('i', $student_id);
