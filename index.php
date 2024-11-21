@@ -1,3 +1,26 @@
+<?php
+require_once 'functions.php';
+
+$error_message = "";
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
+    $email = trim($_POST['email']);
+    $password = trim($_POST['password']);
+
+    if (empty($email) || empty($password)) {
+        $error_message = "Email and password are required.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error_message = "Invalid email format.";
+    } elseif (userLogin($email, $password)) {
+        redirect_to_dashboard();
+    } else {
+        $error_message = "Invalid credentials. Please try again.";
+    }
+}
+?>
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 
