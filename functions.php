@@ -217,14 +217,7 @@ function isStudentIdDuplicate($data) {
 
     return '';
 }
-function logout_user() {
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start(); // Start the session if not already started
-    }
-    session_destroy(); // Destroy the session
-    header("Location:../index.php"); // Redirect to root login page
-    exit();
-}
+
 // Generate a unique student ID based on the max ID in the database
 function createUniqueStudentId() {
     $db = databaseConnection();
@@ -361,5 +354,13 @@ function getStudentDataById(int $student_id): ?array {
     }
 }
 
+function logout_user() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start(); // Start the session if not already started
+    }
+    session_destroy(); // Destroy the session
+    header("Location:../index.php"); // Redirect to root login page
+    exit();
+}
 
 ?>  
