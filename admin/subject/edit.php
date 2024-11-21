@@ -1,4 +1,6 @@
 <?php
+ob_start(); // Start output buffering
+
 include("../../functions.php");
 include("../partials/header.php");
 include("../partials/side-bar.php");
@@ -30,7 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errorMessage = "The subject name already exists!";
         } else {
             if (updateSubject($subjectId, $updatedSubjectName)) {
-                header("Location: add.php?message=updated");
+                // Redirect after success, ensure no output before this line
+                header("Location: add.php?");
                 exit();
             } else {
                 $errorMessage = "Failed to update subject details!";
@@ -65,7 +68,7 @@ function isSubjectNameDuplicate($subjectId, $subjectName) {
 }
 
 function updateSubject($subjectId, $subjectName) {
-    $conn = databaseConnection  ();
+    $conn = databaseConnection();
     $stmt = $conn->prepare("UPDATE subjects SET subject_name = ? WHERE id = ?");
     $stmt->bind_param("si", $subjectName, $subjectId);
     $result = $stmt->execute();
@@ -134,4 +137,6 @@ function updateSubject($subjectId, $subjectName) {
 
 <?php
 include("../partials/footer.php");
+ob_end_flush(); // End output buffering and send output
+
 ?>
