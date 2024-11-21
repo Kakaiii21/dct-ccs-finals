@@ -1,15 +1,16 @@
 <?php
 ob_start(); // Start output buffering
 
+// Include necessary files
 include("../../functions.php");
 include("../partials/header.php");
 include("../partials/side-bar.php");
 
 $errorMessage = null;
 $successMessage = null;
+$subject = null;
 
 // Get subject details if 'id' is provided in the URL
-$subject = null;
 if (isset($_GET['id'])) {
     $subjectId = $_GET['id'];
     $subject = getSubjectById($subjectId);
@@ -32,8 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errorMessage = "The subject name already exists!";
         } else {
             if (updateSubject($subjectId, $updatedSubjectName)) {
-                // Redirect after success, ensure no output before this line
-                header("Location: add.php?");
+                // Redirect after success
+                header("Location: add.php");
                 exit();
             } else {
                 $errorMessage = "Failed to update subject details!";
@@ -138,5 +139,4 @@ function updateSubject($subjectId, $subjectName) {
 <?php
 include("../partials/footer.php");
 ob_end_flush(); // End output buffering and send output
-
 ?>
