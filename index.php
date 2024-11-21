@@ -1,25 +1,44 @@
 <?php
-require_once 'functions.php';
+session_start(); // Start the session
 
-$error_message = "";
+// Include the necessary functions
+include 'functions.php'; // All database and reusable functions are here
 
+// Initialize variables
+$email = '';
+$password = '';
+$errors = [];
+$result = null;
+
+// Check if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
-    $email = trim($_POST['email']);
-    $password = trim($_POST['password']);
+    $email = $_POST['email'];
+    $password = $_POST['password'];
 
-    if (empty($email) || empty($password)) {
-        $error_message = "Email and password are required.";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error_message = "Invalid email format.";
-    } elseif (userLogin($email, $password)) {
-        redirect_to_dashboard();
-    } else {
-        $error_message = "Invalid credentials. Please try again.";
+    // Validate input fields
+    if (empty($email)) {
+        $errors[] = "Email Address is required!";
+    }
+    if (empty($password)) {
+        $errors[] = "Password is required!";
+    }
+
+    if (empty($errors)) {
+        // Call the login function from functions.php
+        $result = userLogin($email, $password);
+
+        if ($result) {
+            // Successful login
+            $_SESSION['loggedin'] = true;
+            header("Location: admin/dashboard.php"); // Redirect to admin dashboard
+            exit();
+        } else {
+            // Handle login failure
+            $errors[] = "Invalid email or password.";
+        }
     }
 }
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">

@@ -17,18 +17,27 @@ function databaseConnection(): mysqli {
 }
 function userLogin($email, $password) {
     $conn = databaseConnection();
-    $query = "SELECT * FROM users WHERE email = :email AND password = :password LIMIT 1";
+    $query = "SELECT * FROM users WHERE email = ? AND password = ? LIMIT 1";
     $stmt = $conn->prepare($query);
-    $hashedPassword = md5($password);
-    $stmt->execute(['email' => $email, 'password' => $hashedPassword]);
 
-    if ($stmt->rowCount() === 1) {
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$stmt) {
+        die("Statement preparation failed: " . $conn->error);
+    }
+
+    $hashedPassword = md5($password);
+    $stmt->bind_param("ss", $email, $hashedPassword); // Bind parameters (string, string)
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 1) {
+        $user = $result->fetch_assoc();
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_email'] = $user['email'];
         return true;
     }
     return false;
 }
+
 
 ?>
