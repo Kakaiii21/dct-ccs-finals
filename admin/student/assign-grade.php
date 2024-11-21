@@ -119,7 +119,18 @@ if ($result->num_rows > 0) {
                     <li><strong>Subject Name:</strong> <?php echo htmlspecialchars($record['subject_name']); ?></li>
                 </ul>
 
-           
+                <form method="post">
+                    <input type="hidden" name="id" value="<?php echo htmlspecialchars($record_id); ?>">
+                    <div class="mb-3">
+                        <label for="grade" class="form-label">Grade</label>
+                        <input type="number" step="0.01" class="form-control" id="grade" name="grade" value="<?php echo htmlspecialchars($record['grade']); ?>" required>
+                    </div>
+                    <a href="attach-subject.php?id=<?php echo htmlspecialchars($record['student_id']); ?>" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" name="assign_grade" class="btn btn-primary">Assign Grade to Subject</button>
+                </form>
+
+
+
             </div>
         </div>
     <?php endif; ?>
