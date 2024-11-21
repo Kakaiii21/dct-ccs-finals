@@ -2,10 +2,7 @@
 $Pagetitle = "Add New Student"; // Page title
 include_once '../partials/header.php';
 include_once '../partials/side-bar.php';
-// Include the functions file in register.php
-require_once('../../functions.php');
-
-
+include_once '../../functions.php';
 
 // Enable error reporting for debugging
 ini_set('display_errors', 1);
@@ -15,39 +12,63 @@ error_reporting(E_ALL);
 $errors = '';
 $success_msg = '';
 
-// Form submission and student registration logic
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $new_student = [
-        'id_number' => getStudentIdPrefix(trim($_POST['student_id'] ?? '')),
+    $new_student = processStudentForm();  // Process the form data
+    $validation_errors = validateStudentData($new_student);  // Validate student data
+
+    if (empty($validation_errors)) {
+        $errors = handleDuplicateStudent($new_student);  // Handle duplicates
+        if (empty($errors)) {
+            $success_msg = registerNewStudent($new_student);  // Register the student if no errors
+        }
+    } else {
+        $errors = displayAlert($validation_errors, 'danger');  // Show validation errors
+    }
+}
+
+/**
+ * Process and prepare the form data.
+ * 
+ * @return array The student data.
+ */
+function processStudentForm() {
+    return [
+        'id_number' => sanitizeStudentId(trim($_POST['student_id'] ?? '')),
         'first_name' => trim($_POST['first_name'] ?? ''),
         'last_name' => trim($_POST['last_name'] ?? '')
     ];
+}
 
-    // Validate student data
-    $validation_errors = verifyStudent($new_student);
+/**
+ * Validate student data.
+ * 
+ * @param array $student The student data.
+ * @return array Validation errors.
+ */
+function validateStudentData($student) {
+    return verifyStudentData($student);
+}
 
-    if (empty($validation_errors)) {
-        $duplicate_check = StudentIdDuplicate($new_student);
-
-        if ($duplicate_check) {
-            $errors = displayAlert([$duplicate_check], 'danger');
-        } else {
-            // Insert new student into the database
-            $success_msg = registerNewStudent($new_student);
-        }
-    } else {
-        $errors = displayAlert($validation_errors, 'danger');
-    }
+/**
+ * Handle potential duplicate student entries.
+ * 
+ * @param array $student The student data.
+ * @return string Error message if a duplicate is found, empty otherwise.
+ */
+function handleDuplicateStudent($student) {
+    $duplicate_check = isStudentIdDuplicate($student);
+    return !empty($duplicate_check) ? displayAlert([$duplicate_check], 'danger') : '';
 }
 
 /**
  * Registers a new student in the database.
  * 
  * @param array $new_student The student data to insert.
- * @return string Success message or error message.
+ * @return string Success or error message.
  */
 function registerNewStudent($new_student) {
-    $db = connectDatabase();
+    $db = databaseConnection();
     $unique_id = createUniqueStudentId();
     $insert_query = "INSERT INTO students (id, student_id, first_name, last_name) VALUES (?, ?, ?, ?)";
     $stmt = $db->prepare($insert_query);
@@ -56,18 +77,30 @@ function registerNewStudent($new_student) {
         $stmt->bind_param('isss', $unique_id, $new_student['id_number'], $new_student['first_name'], $new_student['last_name']);
         
         if ($stmt->execute()) {
+            $stmt->close();
+            $db->close();
             return displayAlert(["Student registration successful!"], 'success');
         } else {
+            $stmt->close();
+            $db->close();
             return displayAlert(["Registration failed: " . $stmt->error], 'danger');
         }
-        $stmt->close();
     } else {
+        $db->close();
         return displayAlert(["Error preparing statement: " . $db->error], 'danger');
     }
-
-    $db->close();
 }
 
+/**
+ * Fetch all students from the database.
+ * 
+ * @param object $db The database connection.
+ * @return object The result set of students.
+ */
+function fetchAllStudents($db) {
+    $fetch_query = "SELECT * FROM students";
+    return $db->query($fetch_query);
+}
 ?>
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pt-5">
@@ -84,9 +117,6 @@ function registerNewStudent($new_student) {
     <!-- Display errors and success messages -->
     <?php if (!empty($errors)): ?>
         <?php echo $errors; ?>
-    <?php endif; ?>
-    <?php if (!empty($success_msg)): ?>
-        <?php echo $success_msg; ?>
     <?php endif; ?>
 
     <!-- Registration form -->
@@ -154,15 +184,3 @@ function registerNewStudent($new_student) {
 </main>
 
 <?php include_once '../partials/footer.php'; ?>
-
-<?php
-/**
- * Fetch all students from the database.
- * 
- * @param object $db The database connection.
- * @return object The result set of students.
- */
-// Function to fetch all students from the database
-
-
-?>
