@@ -78,7 +78,6 @@ if (isset($_GET['id'])) {
                     }
                 }
 
-                $success_message = "Subjects successfully attached to the student.";
 
                 // Refresh available subjects after attaching
                 $query = "SELECT * FROM subjects WHERE id NOT IN (SELECT subject_id FROM students_subjects WHERE student_id = ?)";
