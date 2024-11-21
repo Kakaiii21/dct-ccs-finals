@@ -8,7 +8,6 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Database connection
-$connection = databaseConnection();
 
 // Fetch the number of subjects
 $subject_count = getTotalSubjects($connection);
