@@ -184,66 +184,28 @@ function checkDuplicateSubjectData($data) {
 
     return ''; // No error, proceed with insertion
 }
-function StudentIdDuplicate($data) {
-    $db = databaseConnection();
-    $sql = "SELECT * FROM students WHERE student_id = ?";
-    $stmt = $db->prepare($sql);
-    $stmt->bind_param('s', $data['id_number']);
-    $stmt->execute();
-    $res = $stmt->get_result();
+function verifyStudentData($data) {
+    $validation_errors = [];
 
-    if ($res->num_rows > 0) {
-        return "This Student ID is already taken.";
+    // Check if Student ID is empty
+    if (empty($data['id_number'])) {
+        $validation_errors[] = "Student ID is required.";
     }
 
-    return ''; // No duplicate found
-}
-
-// Function to generate a unique student ID (you can customize it based on your needs)
-function createUniqueStudentId() {
-    return uniqid(); // Generates a unique ID
-}
-
-// Function to verify student data (customize validation as per your needs)
-function verifyStudent($student) {
-    $errors = [];
-
-    // Check if any field is empty
-    if (empty($student['id_number'])) {
-        $errors[] = "Student ID is required.";
-    }
-    if (empty($student['first_name'])) {
-        $errors[] = "First name is required.";
-    }
-    if (empty($student['last_name'])) {
-        $errors[] = "Last name is required.";
+    // Check if First Name is empty
+    if (empty($data['first_name'])) {
+        $validation_errors[] = "First Name is required.";
     }
 
-    // Add more validation rules as necessary
-
-    return $errors;
-}
-
-// Function to display alert messages
-function displayAlert($messages, $type) {
-    $alert = '<div class="alert alert-' . $type . '">';
-    foreach ($messages as $message) {
-        $alert .= '<p>' . htmlspecialchars($message) . '</p>';
+    // Check if Last Name is empty
+    if (empty($data['last_name'])) {
+        $validation_errors[] = "Last Name is required.";
     }
-    $alert .= '</div>';
-    return $alert;
-}
 
-// Helper function to get the student ID prefix (customize as needed)
-function getStudentIdPrefix($student_id) {
-    // Example logic: Ensure the ID starts with "STU-" followed by the provided ID
-    return 'STU-' . strtoupper($student_id);
+    return $validation_errors;
 }
-
-// Function to fetch all students from the database
-function fetchAllStudents($db) {
-    $fetch_query = "SELECT * FROM students";
-    return $db->query($fetch_query);
+function getStudentIdPrefix($id) {
+    return substr($id, 0, 4);
 }
 
 ?>  
