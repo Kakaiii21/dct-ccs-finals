@@ -313,6 +313,47 @@ function getTotalSubjects($db) {
 
     return 0;
 }
+/**
+ * Fetch the data of a specific student by their ID.
+ *
+ * @param int $student_id The ID of the student to fetch.
+ * @return array|null The student data as an associative array, or null if not found.
+ */
+function getStudentDataById(int $student_id): ?array {
+    // Establish the database connection
+    $connection = databaseConnection();
+    if ($connection === false) {
+        // Handle connection failure (Optional: log the error)
+        return null;
+    }
+
+    // Prepare the SQL query to fetch student data by ID
+    $query = "SELECT * FROM students WHERE id = ?";
+    if ($stmt = $connection->prepare($query)) {
+        // Bind the student ID parameter to the query
+        $stmt->bind_param('i', $student_id);
+
+        // Execute the query
+        $stmt->execute();
+
+        // Get the result of the query
+        $result = $stmt->get_result();
+
+        // Fetch the student data as an associative array
+        $student = $result->fetch_assoc();
+
+        // Clean up and close the statement and connection
+        $stmt->close();
+        $connection->close();
+
+        // Return the student data, or null if not found
+        return $student ?: null;
+    } else {
+        // Handle statement preparation failure (Optional: log the error)
+        $connection->close();
+        return null;
+    }
+}
 
 
 ?>  
