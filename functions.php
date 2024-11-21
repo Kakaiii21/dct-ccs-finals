@@ -76,9 +76,6 @@ function validateSubjectData($subject_data) {
     return $errors; // Return the list of errors
 }
 
-// Function to check for duplicate subject code in the database
-// Function to check for duplicate subject code in the database
-// Function to check for duplicate subject code in the database
 function checkDuplicateSubjectCode($subject_code) {
     $connection = databaseConnection(); // Corrected to use databaseConnection()
     $query = "SELECT * FROM subjects WHERE subject_code = ?";
@@ -94,9 +91,8 @@ function checkDuplicateSubjectCode($subject_code) {
     return ''; // No duplicate found
 }
 
-// Function to check for duplicate subject name in the database
 function checkDuplicateSubjectName($subject_name) {
-    $connection = databaseConnection(); // Corrected to use databaseConnection()
+    $connection = databaseConnection();
     $query = "SELECT * FROM subjects WHERE subject_name = ?";
     $stmt = $connection->prepare($query);
     $stmt->bind_param('s', $subject_name);
@@ -104,11 +100,12 @@ function checkDuplicateSubjectName($subject_name) {
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        return "Subject name already exists. Please choose another."; // Return the error message for duplicates
+        return "Subject Name already exists.";
     }
 
-    return ''; // No duplicate founddatabaseConnection
+    return ''; // No error
 }
+
 
 
 // Function to add a new subject to the database
@@ -168,5 +165,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_subject'])) {
     // Display the message (success or error)
     echo $message;
 }
+function checkDuplicateSubjectData($data) {
+    // Assuming databaseConnection() function is defined elsewhere
+    $connection = databaseConnection();
+    $subject_code = $data['subject_code'];
+    
+    // Prepare the query to check if the subject code exists in the database
+    $query = "SELECT * FROM subjects WHERE subject_code = ?";
+    $stmt = $connection->prepare($query);
+    $stmt->bind_param('s', $subject_code);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
+    // Return error message if duplicate subject code is found
+    if ($result->num_rows > 0) {
+        return "Subject Code already exists.";
+    }
+
+    return ''; // No error, proceed with insertion
+}
 ?>
